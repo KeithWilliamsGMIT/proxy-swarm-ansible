@@ -1,0 +1,19 @@
+---
+# Directories
+temporary_directory: "/tmp"
+volume_directory: "/tmp"
+
+# Docker
+docker_network_name: "proxy_network"
+
+# Docker image versions
+traefik_version: v1.7.20
+
+# Traefik configuration
+traefik_user: admin
+traefik_email_address: "admin@domain.com"
+
+# SSL certs
+domain_name: example.local
+is_using_local_ssl_certs: '{{ (domain_name | regex_search("^((?!\.com).)*$")) == domain_name }}'
+is_using_acme_staging: '{{ domain_name != "example.com" }}'

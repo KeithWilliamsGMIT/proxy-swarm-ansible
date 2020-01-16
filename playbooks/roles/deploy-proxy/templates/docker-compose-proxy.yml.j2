@@ -1,0 +1,35 @@
+version: '3.6'
+services:
+  traefik:
+    image: traefik:{{ traefik_version }}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "{{ volume_directory }}/traefik/traefik.toml:/etc/traefik/traefik.toml"
+      - "{{ volume_directory }}/traefik/acme/:/etc/traefik/acme/"
+{% if is_using_local_ssl_certs  == true %}
+      - "{{ volume_directory }}/traefik/certs/:/etc/traefik/certs/"
+{% else %}
+    environment:
+      - DO_AUTH_TOKEN={{ do_api_token }}
+{% endif %}
+    deploy:
+      labels:
+        - "traefik.port=8080"
+        - "traefik.backend=traefik"
+        - "traefik.frontend.rule=Host:traefik.proxy.{{ domain_name }}"
+        - "traefik.docker.network=spotlight_overlay_network"
+        - "traefik.frontend.auth.basic={{ traefik_user }}:{{ traefik_password }}"
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - {{ docker_network_name }}
+
+networks:
+  {{ docker_network_name }}:
+    external: true
+    name: {{ docker_network_name }}

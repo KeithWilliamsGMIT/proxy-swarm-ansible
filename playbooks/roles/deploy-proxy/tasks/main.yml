@@ -1,0 +1,53 @@
+---
+- name: Install required python modules for docker
+  pip:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+    state: present
+  with_items:
+  - { name: docker-py, version: 1.10.6 }
+
+- name: Create an overlay network
+  docker_network:
+    name: '{{ docker_network_name }}'
+    driver: overlay
+    state: present
+
+- name: Create configuration directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - '{{ volume_directory }}/traefik'
+    - '{{ volume_directory }}/traefik/acme'
+
+- name: Create certs directories
+  file:
+    path: '{{ volume_directory }}/traefik/certs'
+    state: directory
+    recurse: yes
+  when: is_using_local_ssl_certs
+
+- name: Copy SSL certs to directory
+  copy:
+    src: '{{ item.name }}'
+    dest: '{{ volume_directory }}/traefik/certs/{{ item.name }}'
+    mode: '{{ item.mode }}'
+  with_items:
+    - { name: 'local.crt', mode: 644 }
+    - { name: 'local.key', mode: 600 }
+  when: is_using_local_ssl_certs
+
+- name: Write out Traefik template
+  template:
+    src: traefik/traefik.toml.j2
+    dest: '{{ volume_directory }}/traefik/traefik.toml'
+
+- name: Write out docker-compose-proxy.yml template
+  template:
+    src: docker-compose-proxy.yml.j2
+    dest: '{{ temporary_directory }}/docker-compose-proxy.yml'
+
+- name: Deploy proxy stack to swarm
+  command: docker stack deploy --with-registry-auth --compose-file {{ temporary_directory }}/docker-compose-proxy.yml proxy

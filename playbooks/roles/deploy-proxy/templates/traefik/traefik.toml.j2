@@ -1,0 +1,45 @@
+debug = true
+
+logLevel = "DEBUG"
+defaultEntryPoints = ["http", "https"]
+
+[entryPoints]
+  [entryPoints.http]
+    address = ":80"
+    [entryPoints.http.redirect]
+      entryPoint = "https"
+  [entryPoints.https]
+    address = ":443"
+    [entryPoints.https.tls]
+{% if is_using_local_ssl_certs == true %}
+      [[entryPoints.https.tls.certificates]]
+        certFile = "/etc/traefik/certs/local.crt"
+        keyFile = "/etc/traefik/certs/local.key"
+{% else %}
+
+[acme]
+email = "{{ traefik_email_address }}"
+storage = "/etc/traefik/acme/acme.json"
+entryPoint = "https"
+onHostRule = true
+{% if is_using_acme_staging == true %}
+caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+{% endif %}
+[acme.dnsChallenge]
+  provider = "digitalocean"
+  delayBeforeCheck = 0
+[[acme.domains]]
+  main = "*.{{ domain_name }}"
+  sans = ["{{ domain_name }}"]
+{% endif %}
+
+[retry]
+
+[web]
+
+[docker]
+endpoint="unix:///var/run/docker.sock"
+domain="{{ domain_name }}"
+exposedByDefault=true
+watch=true
+swarmmode=true
