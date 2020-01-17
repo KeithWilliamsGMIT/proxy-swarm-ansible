@@ -7,7 +7,7 @@ This repository shows how to setup a reverse proxy for services running in Docke
 The first step to getting started is to clone the repository:
 
 ```bash
-git clone https://github.com/KeithWilliamsGMIT/proxy-swarm-ansible
+git clone https://github.com/KeithWilliamsGMIT/proxy-swarm-ansible.git
 ```
 
 Next, install Ansible and then we can use two existing Ansible roles to install Docker and initialise a Docker Swarm. These roles are defined in the `requirements.yml` file and will be installed to `~/.ansible/roles/` by default using the below commands:
@@ -56,6 +56,8 @@ ID                  NAME                MODE                REPLICAS            
 dj5m4yokvqas        proxy_traefik       global              1/1                 traefik:latest      *:80->80/tcp, *:443->443/tcp
 ```
 
+We can now go to the Traefik dashboard by navigating to [https://traefik.proxy.example.local/](https://traefik.proxy.example.local/). There is basic authentication configured for the dashboard by default. Login using the username `admin` and password `password`.
+
 ## Further configuration
 
 ### Configuring other services
@@ -67,7 +69,7 @@ deploy:
     labels:
     - "traefik.port=8080"
     - "traefik.backend=traefik"
-    - "traefik.frontend.rule=Host:traefik.example.com"
+    - "traefik.frontend.rule=Host:traefik.proxy.example.com"
     - "traefik.docker.network=proxy_network"
 ```
 
