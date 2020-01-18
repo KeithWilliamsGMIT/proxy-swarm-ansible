@@ -40,7 +40,40 @@ The `--ask-vault-pass` flag will prompt you for the vault password to access sen
 
 ## Running the proxy locally
 
-To run the proxy locally with HTTPS you will also need to generate self-signed SSL certs. These are provided in the repository under `playbooks\roles\deploy-proxy\files`. If these have expired you can generate new ones using the following command.
+To run the proxy locally with a domain name you will need to start a local DNS server. For example, `dnsmasq` can be used with Ubuntu. The first step to configuring `dnsmasq` on Ubuntu is to add the line `dns=dnsmasq` to the `[main]` section of the `/etc/NetworkManager/NetworkManager.conf` file so that is looks like the following:
+
+```bash
+[main]
+dns=dnsmasq
+```
+
+Next, remove the `/etc/resolv.conf` file and instead create a link from the NetworkManager `resolv.conf` configuration file.
+
+``` bash
+sudo rm /etc/resolv.conf
+sudo ln -s /var/run/NetworkManager/resolv.conf /etc/resolv.conf
+```
+
+Then, create a new configuration file for the domain you want to use locally and point it to localhost. By default, this repository uses `example.local` so we will configure this domain.
+
+```bash
+echo 'address=/.example.local/127.0.0.1' | sudo tee /etc/NetworkManager/dnsmasq.d/example.local.conf
+```
+
+Finally, restart the NetworkManager so that the changes will take effect.
+
+```bash
+sudo systemctl reload NetworkManager
+```
+
+To test that the DNS server will direct any request for `example.local`, or any of it's subdomains, to localhost, use the `dig` command as shown below:
+
+```bash
+ubuntu:~$ dig example.local +short
+127.0.0.1
+```
+
+To run the proxy with HTTPS you will also need to generate self-signed SSL certs. These are provided in the repository under `playbooks\roles\deploy-proxy\files`. If these have expired or you wish to create your own you can generate new ones using the following command:
 
 ```bash
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout local.key -out local.crt
