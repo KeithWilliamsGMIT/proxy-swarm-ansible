@@ -132,12 +132,19 @@ To use this role add the following to your `requirements.yml` file:
   name: deploy-proxy
 ```
 
+## Troubleshooting
+
+Here are a few tips you can try to troubleshoot any issues you may encounter:
+
++ Make sure that the Traefik service is running as expected.
++ Use the `dig` command, or similar, to check that your chosen domain is resolved to one of the swarm manager nodes.
+
 ## Contributing
 
 Any contribution to this repository is appreciated, whether it is a pull request, bug report, feature request, feedback or even starring the repository. Some potential areas that need further refinement are:
 
-+ Hardening of playbooks
-+ Publish to Ansible Galaxy
++ Hardening of role
++ Publishing role to Ansible Galaxy
 + Documentation
 + Upgrade to Traefik v2
 

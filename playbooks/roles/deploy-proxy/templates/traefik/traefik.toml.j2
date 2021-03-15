@@ -17,6 +17,11 @@ defaultEntryPoints = ["http", "https"]
         keyFile = "/etc/traefik/certs/local.key"
 {% else %}
 
+[metrics]
+  [metrics.prometheus]
+    entryPoint = "traefik"
+    buckets = [0.1,0.3,1.2,5.0]
+
 [acme]
 email = "{{ traefik_email_address }}"
 storage = "/etc/traefik/acme/acme.json"
