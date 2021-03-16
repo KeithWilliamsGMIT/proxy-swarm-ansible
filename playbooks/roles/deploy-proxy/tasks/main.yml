@@ -31,12 +31,12 @@
     state: directory
     recurse: yes
   with_items:
-    - '{{ volume_directory }}/traefik'
-    - '{{ volume_directory }}/traefik/acme'
+    - '{{ volume_directory }}/proxy/traefik'
+    - '{{ volume_directory }}/proxy/traefik/acme'
 
 - name: Create certs directories
   file:
-    path: '{{ volume_directory }}/traefik/certs'
+    path: '{{ volume_directory }}/proxy/traefik/certs'
     state: directory
     recurse: yes
   when: is_using_local_ssl_certs
@@ -44,7 +44,7 @@
 - name: Copy SSL certs to directory
   copy:
     src: '{{ item.name }}'
-    dest: '{{ volume_directory }}/traefik/certs/{{ item.name }}'
+    dest: '{{ volume_directory }}/proxy/traefik/certs/{{ item.name }}'
     mode: '{{ item.mode }}'
   with_items:
     - { name: 'local.crt', mode: 644 }
@@ -54,7 +54,7 @@
 - name: Write out Traefik template
   template:
     src: traefik/traefik.toml.j2
-    dest: '{{ volume_directory }}/traefik/traefik.toml'
+    dest: '{{ volume_directory }}/proxy/traefik/traefik.toml'
 
 - name: Write out docker-compose-proxy.yml template
   template:

@@ -16,12 +16,6 @@ defaultEntryPoints = ["http", "https"]
         certFile = "/etc/traefik/certs/local.crt"
         keyFile = "/etc/traefik/certs/local.key"
 {% else %}
-
-[metrics]
-  [metrics.prometheus]
-    entryPoint = "traefik"
-    buckets = [0.1,0.3,1.2,5.0]
-
 [acme]
 email = "{{ traefik_email_address }}"
 storage = "/etc/traefik/acme/acme.json"
@@ -38,9 +32,32 @@ caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
   sans = ["{{ domain_name }}"]
 {% endif %}
 
+{% if is_traefik_metrics_enabled == true %}
+[metrics]
+  [metrics.prometheus]
+    entryPoint = "traefik"
+    buckets = [0.1,0.3,1.2,5.0]
+{% endif %}
+
+{% if is_traefik_tracing_enabled == true %}
+[tracing]
+  backend = "jaeger"
+  serviceName = "traefik"
+  spanNameLimit = 0
+
+  [tracing.jaeger]
+    samplingServerURL = "http://jaeger:5778/sampling"
+    samplingType = "const"
+    samplingParam = 1.0
+    localAgentHostPort = "jaeger:6831"
+    traceContextHeaderName = "trace-id"
+{% endif %}
+
 [retry]
 
-[web]
+[api]
+  entryPoint = "traefik"
+  dashboard = true
 
 [docker]
 endpoint="unix:///var/run/docker.sock"
